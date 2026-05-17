@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Webhook Sender</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Webhook Sender</h1>
+
+    <label>Webhook URL</label>
+    <input type="text" id="webhook" placeholder="Paste Discord webhook URL" />
+
+    <label>Webhook Name</label>
+    <input type="text" id="username" placeholder="Custom username" />
+
+    <label>Profile Picture URL</label>
+    <input type="text" id="avatar" placeholder="https://example.com/avatar.png" />
+
+    <label>Message</label>
+    <div class="send-row">
+      <input type="text" id="message" placeholder="Send: Hi" />
+      <button id="sendBtn">Send</button>
+    </div>
+
+    <p class="note">
+      This tool is for legitimate webhook testing and automation only.
+    </p>
+
+    <div id="status"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
