@@ -3,34 +3,102 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Webhook Sender</title>
+  <title>Webhook Messenger</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>Webhook Sender</h1>
+  <main class="app-shell">
+    <section class="setup-view" id="setupView" aria-labelledby="setupTitle">
+      <div class="setup-panel">
+        <div class="brand-row">
+          <div class="brand-mark">WH</div>
+          <div>
+            <p class="eyebrow">Webhook messenger</p>
+            <h1 id="setupTitle">Set up your sender</h1>
+          </div>
+        </div>
 
-    <label>Webhook URL</label>
-    <input type="text" id="webhook" placeholder="Paste Discord webhook URL" />
+        <form class="setup-form" id="setupForm">
+          <label for="webhook">Webhook URL</label>
+          <input type="url" id="webhook" placeholder="Paste Discord webhook URL" autocomplete="off" required />
 
-    <label>Webhook Name</label>
-    <input type="text" id="username" placeholder="Custom username" />
+          <label for="username">Bot name</label>
+          <input type="text" id="username" placeholder="Example: Update Bot" maxlength="80" required />
 
-    <label>Profile Picture URL</label>
-    <input type="text" id="avatar" placeholder="https://example.com/avatar.png" />
+          <label for="avatar">Profile picture URL <span>optional</span></label>
+          <div class="avatar-row">
+            <input type="url" id="avatar" placeholder="https://example.com/avatar.png" autocomplete="off" />
+            <div class="avatar-preview" id="avatarPreview" aria-hidden="true">?</div>
+          </div>
 
-    <label>Message</label>
-    <div class="send-row">
-      <input type="text" id="message" placeholder="Send: Hi" />
-      <button id="sendBtn">Send</button>
-    </div>
+          <div class="option-row">
+            <input type="checkbox" id="rememberSetup" />
+            <label for="rememberSetup">Remember setup on this browser</label>
+          </div>
 
-    <p class="note">
-      This tool is for legitimate webhook testing and automation only.
-    </p>
+          <button class="primary-btn" type="submit">Open messenger</button>
+          <p class="status" id="setupStatus" role="status"></p>
+        </form>
+      </div>
 
-    <div id="status"></div>
-  </div>
+      <aside class="preview-panel" aria-label="Bot preview">
+        <p class="eyebrow">Live preview</p>
+        <div class="preview-profile">
+          <div class="preview-avatar" id="previewAvatar" aria-hidden="true">?</div>
+          <div>
+            <strong id="previewName">Bot name</strong>
+            <span id="previewWebhook">Webhook not connected</span>
+          </div>
+        </div>
+        <div class="preview-message" id="previewMessage">Your message will appear in the log after sending.</div>
+        <div class="preview-stats">
+          <div>
+            <span>Saved messages</span>
+            <strong id="savedCount">0</strong>
+          </div>
+          <div>
+            <span>Message limit</span>
+            <strong>2000</strong>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="messenger-view is-hidden" id="messengerView" aria-labelledby="messengerTitle">
+      <header class="messenger-header">
+        <div class="bot-profile">
+          <div class="bot-avatar" id="botAvatar" aria-hidden="true">?</div>
+          <div>
+            <p class="eyebrow">Active webhook</p>
+            <h1 id="messengerTitle">Messenger</h1>
+            <p id="botNameLabel">Bot sender</p>
+            <p id="webhookMeta">Webhook ready</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="ghost-btn" id="editSetupBtn" type="button">Setup</button>
+          <button class="ghost-btn danger-btn" id="clearLogBtn" type="button">Clear log</button>
+        </div>
+      </header>
+
+      <div class="log-summary">
+        <span id="messageCount">0 messages</span>
+        <span id="lastMessageTime">Nothing sent yet</span>
+      </div>
+
+      <div class="log-panel" id="messageLog" aria-live="polite"></div>
+
+      <form class="composer" id="messageForm">
+        <textarea id="message" maxlength="2000" rows="3" placeholder="Write your message..." required></textarea>
+        <div class="composer-footer">
+          <span id="charCounter">0 / 2000</span>
+          <button class="primary-btn" id="sendBtn" type="submit">Send</button>
+        </div>
+      </form>
+
+      <p class="status" id="status" role="status"></p>
+    </section>
+  </main>
 
   <script src="script.js"></script>
 </body>
