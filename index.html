@@ -11,7 +11,7 @@
     <section class="setup-view" id="setupView" aria-labelledby="setupTitle">
       <div class="setup-panel">
         <div class="brand-row">
-          <div class="brand-mark">WH</div>
+          <div class="brand-mark" aria-hidden="true">WH</div>
           <div>
             <p class="eyebrow">Webhook messenger</p>
             <h1 id="setupTitle">Set up your sender</h1>
@@ -19,8 +19,8 @@
         </div>
 
         <form class="setup-form" id="setupForm">
-          <label for="webhook">Webhook URL</label>
-          <input type="url" id="webhook" placeholder="Paste Discord webhook URL" autocomplete="off" required />
+          <label for="webhook">Discord webhook URL</label>
+          <input type="url" id="webhook" placeholder="https://discord.com/api/webhooks/..." autocomplete="off" required />
 
           <label for="username">Bot name</label>
           <input type="text" id="username" placeholder="Example: Update Bot" maxlength="80" required />
@@ -31,9 +31,15 @@
             <div class="avatar-preview" id="avatarPreview" aria-hidden="true">?</div>
           </div>
 
-          <div class="option-row">
-            <input type="checkbox" id="rememberSetup" />
-            <label for="rememberSetup">Remember setup on this browser</label>
+          <div class="setup-grid">
+            <div class="option-row">
+              <input type="checkbox" id="rememberSetup" />
+              <label for="rememberSetup">Remember setup on this browser</label>
+            </div>
+            <div class="option-row">
+              <input type="checkbox" id="compactMode" />
+              <label for="compactMode">Compact message log</label>
+            </div>
           </div>
 
           <button class="primary-btn" type="submit">Open messenger</button>
@@ -42,23 +48,27 @@
       </div>
 
       <aside class="preview-panel" aria-label="Bot preview">
-        <p class="eyebrow">Live preview</p>
-        <div class="preview-profile">
-          <div class="preview-avatar" id="previewAvatar" aria-hidden="true">?</div>
-          <div>
-            <strong id="previewName">Bot name</strong>
-            <span id="previewWebhook">Webhook not connected</span>
+        <div>
+          <p class="eyebrow">Live preview</p>
+          <div class="preview-profile">
+            <div class="preview-avatar" id="previewAvatar" aria-hidden="true">?</div>
+            <div>
+              <strong id="previewName">Bot name</strong>
+              <span id="previewWebhook">Webhook not connected</span>
+            </div>
           </div>
         </div>
-        <div class="preview-message" id="previewMessage">Your message will appear in the log after sending.</div>
+
+        <div class="preview-message" id="previewMessage">Your message preview appears here while you type.</div>
+
         <div class="preview-stats">
           <div>
             <span>Saved messages</span>
             <strong id="savedCount">0</strong>
           </div>
           <div>
-            <span>Message limit</span>
-            <strong>2000</strong>
+            <span>Draft status</span>
+            <strong id="draftState">Ready</strong>
           </div>
         </div>
       </aside>
@@ -76,22 +86,88 @@
           </div>
         </div>
         <div class="header-actions">
+          <button class="ghost-btn" id="sendTestBtn" type="button" title="Send a short test message">Test</button>
+          <button class="ghost-btn" id="exportLogBtn" type="button">Export</button>
+          <label class="ghost-btn file-btn" for="importLogInput">Import</label>
+          <input class="file-input" id="importLogInput" type="file" accept="application/json" />
           <button class="ghost-btn" id="editSetupBtn" type="button">Setup</button>
           <button class="ghost-btn danger-btn" id="clearLogBtn" type="button">Clear log</button>
         </div>
       </header>
 
-      <div class="log-summary">
-        <span id="messageCount">0 messages</span>
-        <span id="lastMessageTime">Nothing sent yet</span>
+      <div class="toolbar">
+        <div class="log-summary">
+          <span id="messageCount">0 messages</span>
+          <span id="lastMessageTime">Nothing sent yet</span>
+        </div>
+        <div class="log-tools">
+          <label class="sr-only" for="searchMessages">Search messages</label>
+          <input id="searchMessages" type="search" placeholder="Search log..." autocomplete="off" />
+          <label class="sr-only" for="statusFilter">Filter by status</label>
+          <select id="statusFilter">
+            <option value="all">All statuses</option>
+            <option value="sent">Sent</option>
+            <option value="failed">Failed</option>
+            <option value="scheduled">Scheduled</option>
+          </select>
+        </div>
       </div>
 
-      <div class="log-panel" id="messageLog" aria-live="polite"></div>
+      <div class="workspace-grid">
+        <aside class="side-panel" aria-label="Templates and tools">
+          <div class="panel-section">
+            <div class="section-heading">
+              <h2>Templates</h2>
+              <button class="mini-btn" id="saveTemplateBtn" type="button">Save draft</button>
+            </div>
+            <div class="template-list" id="templateList"></div>
+          </div>
+
+          <div class="panel-section">
+            <div class="section-heading">
+              <h2>Utilities</h2>
+            </div>
+            <button class="utility-btn" id="copyDraftBtn" type="button">Copy draft</button>
+            <button class="utility-btn" id="restoreDraftBtn" type="button">Restore saved draft</button>
+            <button class="utility-btn" id="resetAppBtn" type="button">Reset local data</button>
+          </div>
+        </aside>
+
+        <div class="log-panel" id="messageLog" aria-live="polite"></div>
+      </div>
 
       <form class="composer" id="messageForm">
-        <textarea id="message" maxlength="2000" rows="3" placeholder="Write your message..." required></textarea>
+        <div class="format-bar" aria-label="Message formatting tools">
+          <button class="tool-btn" type="button" data-format="bold" title="Bold">B</button>
+          <button class="tool-btn italic" type="button" data-format="italic" title="Italic">I</button>
+          <button class="tool-btn mono" type="button" data-format="code" title="Inline code">{ }</button>
+          <button class="tool-btn" type="button" data-format="quote" title="Quote">"</button>
+          <button class="tool-btn" type="button" data-format="list" title="Bullet list">-</button>
+          <button class="tool-btn" type="button" data-format="timestamp" title="Insert timestamp">Time</button>
+        </div>
+
+        <label class="sr-only" for="message">Message</label>
+        <textarea id="message" maxlength="2000" rows="4" placeholder="Write your message..." required></textarea>
+
+        <div class="composer-options">
+          <label for="sendDelay">Send timing</label>
+          <select id="sendDelay">
+            <option value="0">Send now</option>
+            <option value="30">In 30 seconds</option>
+            <option value="60">In 1 minute</option>
+            <option value="300">In 5 minutes</option>
+          </select>
+          <label class="option-row inline-option" for="enterToSend">
+            <input type="checkbox" id="enterToSend" checked />
+            Enter sends
+          </label>
+        </div>
+
         <div class="composer-footer">
-          <span id="charCounter">0 / 2000</span>
+          <div class="message-metrics">
+            <span id="charCounter">0 / 2000</span>
+            <span id="wordCounter">0 words</span>
+          </div>
           <button class="primary-btn" id="sendBtn" type="submit">Send</button>
         </div>
       </form>
@@ -99,6 +175,8 @@
       <p class="status" id="status" role="status"></p>
     </section>
   </main>
+
+  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
 
   <script src="script.js"></script>
 </body>
