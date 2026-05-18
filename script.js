@@ -1,6 +1,6 @@
 const DISCORD_MESSAGE_LIMIT = 2000;
 const HISTORY_LIMIT = 200;
-const CLOUDFLARE_WORKER_URL = "PASTE_YOUR_WORKER_URL_HERE";
+const CLOUDFLARE_WORKER_URL = "https://webhook-messenger-api.skidde72.workers.dev";
 const STORAGE_KEYS = {
   settings: "webhookMessenger.settings.v2",
   history: "webhookMessenger.history.v2",
