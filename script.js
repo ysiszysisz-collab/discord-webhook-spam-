@@ -712,7 +712,7 @@ function renderConfigList() {
     title.textContent = config.name;
 
     const meta = document.createElement("span");
-    meta.textContent = `${config.type} · ${config.maskedTarget} · ${config.status}`;
+    meta.textContent = `${config.type} Â· ${config.maskedTarget} Â· ${config.status}`;
 
     const time = document.createElement("span");
     time.textContent = `Updated ${formatFullTime(Date.parse(config.updatedAt))}`;
@@ -754,7 +754,7 @@ function renderAuditLog() {
     title.textContent = event.action;
 
     const meta = document.createElement("span");
-    meta.textContent = `${event.actor} · ${formatFullTime(Date.parse(event.timestamp))}`;
+    meta.textContent = `${event.actor} Â· ${formatFullTime(Date.parse(event.timestamp))}`;
 
     const details = document.createElement("span");
     details.textContent = event.details || "No details";
@@ -837,16 +837,12 @@ async function postToDiscord(message, entryId) {
   const timeout = window.setTimeout(() => controller.abort(), 15000);
 
   try {
-    const response = await fetch(webhookSettings.webhook, {
+    const response = await fetch(`${CLOUDFLARE_WORKER_URL}/send-message`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        username: webhookSettings.username,
-        avatar_url: webhookSettings.avatar || undefined,
-        content: message
-      }),
+      body: JSON.stringify({ message }),
       signal: controller.signal
     });
 
@@ -858,22 +854,25 @@ async function postToDiscord(message, entryId) {
       return true;
     }
 
-    const retryAfter = response.headers.get("retry-after");
-    const rateLimitMessage = retryAfter ? ` Try again in ${retryAfter} seconds.` : "";
     updateLogEntry(entryId, {
       status: "failed",
-      error: `Discord responded with ${response.status}.${rateLimitMessage}`
+      error: `Worker responded with ${response.status}.`
     });
-    setStatus(statusBox, "Discord rejected the message. Check the webhook.", "error");
+
+    setStatus(statusBox, "Message failed. Check Cloudflare Worker.", "error");
     showToast("Message failed.", "error");
-    recordAudit("message.failed", `Discord responded with ${response.status}`);
+    recordAudit("message.failed", `Worker responded with ${response.status}`);
     return false;
   } catch (error) {
-    const messageText = error.name === "AbortError" ? "Request timed out after 15 seconds." : error.message;
+    const messageText = error.name === "AbortError"
+      ? "Request timed out after 15 seconds."
+      : error.message;
+
     updateLogEntry(entryId, {
       status: "failed",
       error: messageText
     });
+
     setStatus(statusBox, `Error: ${messageText}`, "error");
     showToast("Message failed.", "error");
     recordAudit("message.failed", messageText);
